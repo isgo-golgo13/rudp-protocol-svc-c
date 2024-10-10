@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 
-#define SERVER_PORT 8080
+const int16_t SERVER_PORT = 8080;
 
 // Define a structure to hold buffered packets
 typedef struct packet_buffer {

@@ -6,7 +6,8 @@
 #include <arpa/inet.h>
 #include <time.h>
 
-#define SERVER_PORT 8080
+// Server port
+const int16_t SERVER_PORT = 8080;
 
 int main() {
     int sockfd;

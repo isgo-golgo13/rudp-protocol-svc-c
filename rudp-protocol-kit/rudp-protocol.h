@@ -6,7 +6,8 @@
 #include <sys/time.h>
 #include <stddef.h>
 
-#define RUDP_MAX_DATA_SIZE 512
+
+const int16_t RUDP_MAX_DATA_SIZE = 512;
 
 // RUDP packet structure
 typedef struct rudp_packet {
