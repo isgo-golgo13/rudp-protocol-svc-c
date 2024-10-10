@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <time.h>
+#include <sys/time.h>
 #include <uuid/uuid.h>
 
 // Function to initialize the connection to ScyllaDB

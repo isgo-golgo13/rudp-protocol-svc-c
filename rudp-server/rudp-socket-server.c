@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <time.h>
+#include <sys/time.h>
 
 const int16_t SERVER_PORT = 8080;
 
