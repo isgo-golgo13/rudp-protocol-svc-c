@@ -1,0 +1,25 @@
+# Build stage
+FROM gcc:latest as builder
+
+WORKDIR /app
+
+# Copy all necessary files
+COPY ./server /app/server
+COPY ./rudp-protocol-kit /app/rudp-protocol-kit
+COPY ./storage-kit /app/storage-kit
+
+# Build server
+RUN mkdir build && cd build && cmake .. && make server_executable
+
+# Final rootless stage
+FROM debian:buster-slim
+
+# Create a non-root user
+RUN useradd -m rudpuser
+USER rudpuser
+
+# Copy the server binary
+COPY --from=builder /app/build/server_executable /usr/local/bin/server
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/server"]
