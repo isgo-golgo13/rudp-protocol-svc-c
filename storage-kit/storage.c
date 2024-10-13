@@ -2,11 +2,60 @@
 #include <stdio.h>
 #include <cassandra.h>
 #include <uuid/uuid.h>
+#include <stdlib.h>
+#include <string.h>
 
 static CassCluster* cluster;
 static CassSession* session;
 
-// Initialize ScyllaDB connection
+// Helper function to load the schema from the .cql file
+int load_schema(const char* file_path) {
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Failed to open schema file: %s\n", file_path);
+        return -1;
+    }
+
+    // Get file size and allocate memory for schema script
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* schema_script = (char*)malloc(file_size + 1);
+    if (schema_script == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        fclose(file);
+        return -1;
+    }
+
+    // Read the file into the schema_script buffer
+    fread(schema_script, 1, file_size, file);
+    schema_script[file_size] = '\0';  // Null-terminate the string
+    fclose(file);
+
+    // Execute the schema script using the ScyllaDB session
+    CassStatement* statement = cass_statement_new(schema_script, 0);
+    CassFuture* result_future = cass_session_execute(session, statement);
+    CassError rc = cass_future_error_code(result_future);
+
+    if (rc != CASS_OK) {
+        fprintf(stderr, "Failed to execute schema: %s\n", cass_error_desc(rc));
+        free(schema_script);
+        cass_statement_free(statement);
+        cass_future_free(result_future);
+        return -1;
+    }
+
+    printf("Successfully loaded and executed schema from %s\n", file_path);
+    
+    free(schema_script);
+    cass_statement_free(statement);
+    cass_future_free(result_future);
+
+    return 0;
+}
+
+// Initialize ScyllaDB connection and load schema
 int storage_init() {
     cluster = cass_cluster_new();
     session = cass_session_new();
@@ -21,8 +70,14 @@ int storage_init() {
         cass_future_free(connect_future);
         return -1;
     }
-
     cass_future_free(connect_future);
+
+    // Load schema from file
+    if (load_schema("schema/schema.cql") != 0) {
+        fprintf(stderr, "Schema loading failed\n");
+        return -1;
+    }
+
     return 0;
 }
 
